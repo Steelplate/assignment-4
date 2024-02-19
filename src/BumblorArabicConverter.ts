@@ -1,3 +1,5 @@
+// BumblorArabicConverter.ts
+
 class BumblorArabicConverter {
 
     private static bumblorValues: { [key: string]: number } = {
@@ -12,30 +14,37 @@ class BumblorArabicConverter {
 
     public static bumblor2arabic(bumblor: string): number {
 
-        bumblor = bumblor.toUpperCase().trim();
-
-        if (!/^(M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3}))$/.test(bumblor)) {
+        if (/[^MDCLXVI\s]/i.test(bumblor)) {
             throw new Error("Malformed Number");
         }
 
-        let total = 0;
+        if (/\s/.test(bumblor)) {
+            throw new Error("Malformed Number");
+        }
 
-        for (let i = 0; i < bumblor.length; i++) {
+        if (!/^(M{0,4}(CM)?D?(CD)?C{0,4}(XC)?L?(XL)?X{0,4}(IX)?V?(IV)?I{0,4})$/i.test(bumblor)) {
+            throw new Error("Malformed Number");
+        }
 
-            if (this.bumblorValues[bumblor[i]] < this.bumblorValues[bumblor[i + 1]]) {
+        bumblor = bumblor.toUpperCase();
 
-                total += this.bumblorValues[bumblor[i + 1]] - this.bumblorValues[bumblor[i]];
-                i++;
+        let arabic = 0;
+        let prevValue = 0;
 
+        for (let i = bumblor.length - 1; i >= 0; i--) {
+
+            let value = this.bumblorValues[bumblor[i]];
+
+            if (value < prevValue) {
+                arabic -= value;
             } else {
-
-                total += this.bumblorValues[bumblor[i]];
-
+                arabic += value;
             }
+            prevValue = value;
 
         }
 
-        return total;
+        return arabic;
 
     }
 
@@ -46,21 +55,21 @@ class BumblorArabicConverter {
         }
 
         let result = '';
-        let remaining = arabic;
 
-        Object.entries(this.bumblorValues).forEach(([letter, value]) => {
+        const values = Object.entries(this.bumblorValues).sort((a, b) => b[1] - a[1]);
 
-            let count = Math.floor(remaining / value);
+        for (const [bumblor, value] of values) {
 
-            remaining -= count * value;
-            result += letter.repeat(count);
+            while (arabic >= value) {
+                arabic -= value;
+                result += bumblor;
+            }
 
-        });
+        }
 
         return result;
-
     }
-    
+
 }
 
 export default BumblorArabicConverter;
