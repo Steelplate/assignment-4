@@ -1,5 +1,3 @@
-// BumblorArabicConverter.ts
-
 class BumblorArabicConverter {
 
     private static bumblorValues: { [key: string]: number } = {
